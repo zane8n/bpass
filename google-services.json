@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "81081224714",
+    "project_id": "bpass-bbb85",
+    "storage_bucket": "bpass-bbb85.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81081224714:android:a4094a61b2df0bbeb719f3",
+        "android_client_info": {
+          "package_name": "com.bpass.keysitech"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "81081224714-pbp0qerc95vs59crl9lf13nm91n5eugm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bpass.keysitech",
+            "certificate_hash": "4fe3374846fef7211283600abc9f09feb95d3a83"
+          }
+        },
+        {
+          "client_id": "81081224714-6hg5p721j2tul472fco8iupmisktt6be.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBU_UBDkohL-mT7L7msUn4YCfwB3bsIvA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "81081224714-6hg5p721j2tul472fco8iupmisktt6be.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

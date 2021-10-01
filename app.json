@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "bpass2",
-    "slug": "bpass2",
+    "name": "bpass",
+    "slug": "bpass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -22,10 +22,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.bpass.ben_key6",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "versionCode":1
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
