@@ -4,10 +4,10 @@ import firebase from 'firebase/app'
 import 'firebase/database'
 import { BarCodeScanner, BarCodeScannerResult } from 'expo-barcode-scanner';
 import BarcodeMask from 'react-native-barcode-mask';
-var etype
-var edata
-var sid
-
+let etype
+let edata
+let sid
+let found
 const finderWidth: number = 280;
 const finderHeight: number = 230;
 const width = Dimensions.get('window').width;
@@ -21,11 +21,14 @@ export default function EditScreenInfo({ path }: { path: string }) {
   const [vals, setVals] = useState<any | null>(null)
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisible2, setModalVisible2] = useState(false);
-  const [modalVisible3, setModalVisible3] = useState(false);
   const [nam, setNam] = useState<String>("")
   const [address, setAddress] = useState<String>("")
   const [amount, setAmount] = useState<String>("")
+  const [sex, setSex] = useState<String>("")
+  const [institution, setInstitution] = useState<String>("")
+  const [postNom, setpostNom] = useState<String>("")
   const [message, setMessage] = useState<String>("")
+  const [info, setInfo] = useState<String>("")
   const ONE_SECOND_IN_MS = 500;
   const getter = firebase.database().ref('client/')
   const [type, setType] = useState<any>(BarCodeScanner.Constants.Type.back);
@@ -33,20 +36,20 @@ export default function EditScreenInfo({ path }: { path: string }) {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
-      getter.once('value', snapshot => {
-        const val = snapshot.val()
-        for (let id in val) {
-          console.log(id + " | " + edata);
-          if (id === edata) {
-            console.log('found!');
-            setVals(val[id])
-            console.log(vals);
-          } else {
-            // console.log("Not found!");
-            // break;
-          }
-        }
-      })
+      // getter.once('value', snapshot => {
+      //   const val = snapshot.val()
+      //   for (let id in val) {
+      //     console.log(id + " | " + edata);
+      //     if (id === edata) {
+      //       console.log('found!');
+      //       setVals(val[id])
+      //       console.log(vals);
+      //     } else {
+      //       // console.log("Not found!");
+      //       // break;
+      //     }
+      //   }
+      // })
     })();
 
   }, []);
@@ -73,9 +76,11 @@ export default function EditScreenInfo({ path }: { path: string }) {
         if (path == "payer") {
           getter.once('value', snapshot => {
             const val = snapshot.val()
+            found = 0
             for (let id in val) {
               console.log(id + " | " + edata);
               if (id === edata) {
+                found = 1
                 console.log('found!');
                 setVals(val[id])
                 console.log(vals);
@@ -83,12 +88,19 @@ export default function EditScreenInfo({ path }: { path: string }) {
                 if (vals != null) {
                   payed(sid)
                 } else {
-                  setModalVisible3(true)
+                  setInfo(`Le résultat du code QR est corrompu, veuillez cliquer sur le bouton numériser à nouveau ci-dessous pour réessayer.`)
+                  setModalVisible2(true)
 
                 }
               } else {
                 // console.log("Not found!");
                 // break;
+
+
+              }
+              if(found == 0){
+                setInfo(`Les résultats tirés de ce code QR ne correspondent à aucun enregistrement dans notre base de données. veuillez vérifier que la surface du code qr est propre et n'est pas rayée.`)
+                setModalVisible2(true)
               }
             }
           })
@@ -96,9 +108,11 @@ export default function EditScreenInfo({ path }: { path: string }) {
         } else if (path == "verifier") {
           getter.once('value', snapshot => {
             const val = snapshot.val()
+            found = 0
             for (let id in val) {
               console.log(id + " | " + edata);
               if (id === edata) {
+                found = 1
                 console.log('found!');
                 setVals(val[id])
                 console.log(vals);
@@ -106,12 +120,18 @@ export default function EditScreenInfo({ path }: { path: string }) {
                 if (vals != null) {
                   vefd()
                 } else {
-                  setModalVisible3(true)
+                setInfo(`Le résultat du code QR est corrompu, veuillez cliquer sur le bouton numériser à nouveau ci-dessous pour réessayer.`)
+                  setModalVisible2(true)
 
                 }
               } else {
                 // console.log("Not found!");
                 // break;
+
+              }
+              if(found == 0){
+                setInfo(`Les résultats tirés de ce code QR ne correspondent à aucun enregistrement dans notre base de données. veuillez vérifier que la surface du code qr est propre et n'est pas rayée.`)
+                setModalVisible2(true)
               }
             }
           })
@@ -123,11 +143,14 @@ export default function EditScreenInfo({ path }: { path: string }) {
   const vefd = () => {
     console.log(vals.amount);
     setMessage("Récupération des données réussie!")
-    setNam(vals.name)
-    setAddress(vals.address)
+    setNam(vals.nom)
+    setpostNom(vals.post_nom)
+    setAddress(vals.addresse)
+    setSex(vals.sex)
+    setInstitution(vals.institution)
     setAmount(vals.amount)
     setModalVisible(true)
-    setScanned(true)
+    // setScanned(true)
   }
   const payed = (sid) => {
     console.log(vals.amount);
@@ -142,16 +165,21 @@ export default function EditScreenInfo({ path }: { path: string }) {
 
 
       vals.amount = vals.amount - 500
-      setNam(vals.name)
-      setAddress(vals.address)
+      setNam(vals.nom)
+      setpostNom(vals.post_nom)
+      setAddress(vals.addresse)
+      setSex(vals.sex)
+      setInstitution(vals.institution)
       setAmount(vals.amount)
       setModalVisible(true)
     } else {
+      setInfo(`Cette action ne peut pas être effectuée.
+      Cause d'exception :\n SOLDE INSUFFISANT`)
       setModalVisible2(true)
     }
 
 
-    setScanned(true)
+    // setScanned(true)
   }
   if (hasPermission === null) {
     return <Text>loading...</Text>;
@@ -194,8 +222,10 @@ export default function EditScreenInfo({ path }: { path: string }) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>{message}</Text>
-            <Text style={styles.modalText}>Noms: {nam}</Text>
+            <Text style={styles.modalText}>Noms: {nam} {postNom}</Text>
             <Text style={styles.modalText}>Address: {address}</Text>
+            <Text style={styles.modalText}>Genre: {sex}</Text>
+            <Text style={styles.modalText}>Institution: {institution}</Text>
             <Text style={styles.modalText}>Balance: {amount}</Text>
             <Pressable
               style={[styles.button, styles.buttonClose]}
@@ -219,8 +249,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
         <View style={styles.centeredView}>
 
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Cette action ne peut pas être effectuée.
-              Cause d'exception :{'\n'} SOLDE INSUFFISANT</Text>
+            <Text style={styles.modalText}>{info}</Text>
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={() => setModalVisible2(!modalVisible2)}
@@ -231,37 +260,18 @@ export default function EditScreenInfo({ path }: { path: string }) {
         </View>
       </Modal>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible3}
-        onRequestClose={() => {
-          Alert.alert("Info has been closed.");
-          setModalVisible3(!modalVisible3);
-        }}
-      >
-        <View style={styles.centeredView}>
+   
+            <Text style={styles.modalText}></Text>
+           
 
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Le résultat du code QR est corrompu, veuillez cliquer sur le bouton numériser à nouveau ci-dessous pour réessayer.</Text>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible3(!modalVisible3)}
-            >
-              <Text style={styles.textStyle}>fermer</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+    
+            <Text style={styles.modalText}></Text>
+            
 
     </>
   );
 }
 
-
-export const datago = {
-  edata, etype
-}
 
 
 
