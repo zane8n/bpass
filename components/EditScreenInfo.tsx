@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Text, StyleSheet, Button, Modal, Alert, View, Pressable, Vibration, Dimensions } from 'react-native';
+import { Text, StyleSheet, Button, Modal, Alert, View, Pressable, Vibration, Dimensions,TextInput,SafeAreaView } from 'react-native';
 import firebase from 'firebase/app'
 import 'firebase/database'
 import { BarCodeScanner, BarCodeScannerResult } from 'expo-barcode-scanner';
 import BarcodeMask from 'react-native-barcode-mask';
+import Login from './Login';
 let etype
 let edata
 let sid
@@ -21,7 +22,10 @@ export default function EditScreenInfo({ path }: { path: string }) {
   const [vals, setVals] = useState<any | null>(null)
   const [modalVisible, setModalVisible] = useState(false);
   const [modalVisible2, setModalVisible2] = useState(false);
+  const [showlogin, setShowlogin] = useState(false);
   const [nam, setNam] = useState<String>("")
+  const [usr, setUsr] = useState("")
+  const [pwd, setPwd] = useState("")
   const [address, setAddress] = useState<String>("")
   const [amount, setAmount] = useState<String>("")
   const [sex, setSex] = useState<String>("")
@@ -36,24 +40,15 @@ export default function EditScreenInfo({ path }: { path: string }) {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
-      // getter.once('value', snapshot => {
-      //   const val = snapshot.val()
-      //   for (let id in val) {
-      //     console.log(id + " | " + edata);
-      //     if (id === edata) {
-      //       console.log('found!');
-      //       setVals(val[id])
-      //       console.log(vals);
-      //     } else {
-      //       // console.log("Not found!");
-      //       // break;
-      //     }
-      //   }
-      // })
     })();
 
   }, []);
-
+function reload(sid){
+  firebase.database().ref('client/' + sid).once('value', snapshot => {
+    const val = snapshot.val()
+    setVals(val)
+  })
+}
 
   const handleBarCodeScanned = (scanningResult: BarCodeScannerResult) => {
     if (!scanned) {
@@ -118,7 +113,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
                 console.log(vals);
                 sid = id
                 if (vals != null) {
-                  vefd()
+                  vefd(sid)
                 } else {
                 setInfo(`Le résultat du code QR est corrompu, veuillez cliquer sur le bouton numériser à nouveau ci-dessous pour réessayer.`)
                   setModalVisible2(true)
@@ -140,7 +135,8 @@ export default function EditScreenInfo({ path }: { path: string }) {
       }
     }
   };
-  const vefd = () => {
+  const vefd = (sid) => {
+    reload(sid)
     console.log(vals.amount);
     setMessage("Récupération des données réussie!")
     setNam(vals.nom)
@@ -153,18 +149,29 @@ export default function EditScreenInfo({ path }: { path: string }) {
     // setScanned(true)
   }
   const payed = (sid) => {
-    console.log(vals.amount);
+    console.log("is: " + vals.amount);
     console.log(sid);
+reload(sid)
+console.log(vals.amount);
 
-    const newAmo = vals.amount - 500
-    if (newAmo >= 0) {
-
+    if (vals.amount >= 0) {
+   vals.amount = vals.amount - 500
+      let dt = new Date()
+      console.log(dt);
+      
       let amo_upd = firebase.database().ref(`client/${sid}/`)
-      amo_upd.update({ amount: newAmo })
+      amo_upd.update({ amount: vals.amount })
+      let rec_set = firebase.database().ref(`recs/${dt}/`)
+        rec_set.set({
+          id: `${sid}`,
+          noms: `${vals.nom} ${vals.post_nom}`,
+          amount: 500
+
+        })
       setMessage("Le paiement a été effectué avec succès!")
 
 
-      vals.amount = vals.amount - 500
+      // vals.amount = vals.amount - 500
       setNam(vals.nom)
       setpostNom(vals.post_nom)
       setAddress(vals.addresse)
@@ -187,7 +194,9 @@ export default function EditScreenInfo({ path }: { path: string }) {
   if (hasPermission === false) {
     return <Text>Pas de camera disponible..</Text>;
   }
+  const login = () => {
 
+  }
   return (
     <>
 
@@ -206,7 +215,7 @@ export default function EditScreenInfo({ path }: { path: string }) {
           }}>
 
         </View>
-        <BarcodeMask edgeColor="#62B1F6" showAnimatedLine />
+        <BarcodeMask edgeColor="#62B1F6"  />
         {scanned && <Button title={'numériser à nouveau'} onPress={() => setScanned(false)} />}
 
       </BarCodeScanner>
@@ -267,7 +276,8 @@ export default function EditScreenInfo({ path }: { path: string }) {
     
             <Text style={styles.modalText}></Text>
             
-
+           
+<Login/>
     </>
   );
 }
@@ -335,5 +345,27 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  form: {
+    alignItems: 'center',
+    backgroundColor: 'rgb(58, 58, 60)',
+    borderRadius: 8,
+    flexDirection: 'row',
+    height: 48,
+    paddingHorizontal: 16,
+  },
+  label: {
+    color: 'rgba(235, 235, 245, 0.6)',
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 20,
+    width: 80,
+  },input: {
+    width: 200,
+    height: 44,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'black',
+    marginBottom: 10,
+  },
 });
